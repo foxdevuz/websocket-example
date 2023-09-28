@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>WebSocket Client</title>
+</head>
+
+<body>
+    <h1>WebSocket Client</h1>
+    <div id="messages"></div>
+    <input type="text" id="messageInput" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        var socket = new WebSocket("ws://localhost:8080"); // Adjust the URL if your server is on a different host or port
+        let arr = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1];
+        socket.onopen = function(event) {
+            console.log("Connected to WebSocket server");
+            setInterval(function() {
+                let rand = arr[Math.floor(Math.random() * arr.length)];
+                console.log(rand);
+                rand == 1 && console.log("Bingo");
+            }, 1500);
+        };
+
+        socket.onmessage = function(event) {
+            var messages = document.getElementById("messages");
+            messages.innerHTML += "<p>" + event.data + "</p>";
+        };
+
+        socket.onclose = function(event) {
+            console.log("Connection closed");
+
+        };
+
+        function sendMessage() {
+            var messageInput = document.getElementById("messageInput");
+            var message = messageInput.value;
+            socket.send(message);
+            messageInput.value = "";
+        }
+    </script>
+</body>
+
+</html>
