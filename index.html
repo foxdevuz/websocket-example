@@ -13,25 +13,26 @@
 
     <script>
         var socket = new WebSocket("ws://localhost:8080"); // Adjust the URL if your server is on a different host or port
-        let arr = [-10, -9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1];
-        socket.onopen = function(event) {
-            console.log("Connected to WebSocket server");
-            setInterval(function() {
-                let rand = arr[Math.floor(Math.random() * arr.length)];
-                console.log(rand);
-                rand == 1 && console.log("Bingo");
-            }, 1500);
-        };
 
-        socket.onmessage = function(event) {
+        socket.addEventListener('open', (event) => {
+            console.log("Connected to WebSocket server");
+            setInterval(() => {
+                let rand = Math.floor(Math.random() * 12) - 6;
+                console.log(rand);
+                if (rand === 1) {
+                    console.log("Bingo");
+                }
+            }, 1500);
+        });
+
+        socket.addEventListener('message', (event) => {
             var messages = document.getElementById("messages");
             messages.innerHTML += "<p>" + event.data + "</p>";
-        };
+        });
 
-        socket.onclose = function(event) {
+        socket.addEventListener('close', (event) => {
             console.log("Connection closed");
-
-        };
+        });
 
         function sendMessage() {
             var messageInput = document.getElementById("messageInput");
