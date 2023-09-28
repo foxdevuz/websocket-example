@@ -1,5 +1,6 @@
 <?php
 
+use App\Events\WebSocketEvent;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -25,4 +26,13 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+});
+
+Route::get('/notification', function () {
+    return view('notification');
+});
+Route::post('/notification', function () {
+    $name = request()->name;
+
+    event(new WebSocketEvent($name));
 });
