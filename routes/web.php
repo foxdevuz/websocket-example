@@ -1,6 +1,5 @@
 <?php
 
-use App\Events\WebSocketEvent;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,23 +15,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
-});
-
-Route::middleware([
-    'auth:sanctum',
-    config('jetstream.auth_session'),
-    'verified',
-])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
-});
-
-Route::get('/notification', function () {
-    return view('notification');
-});
-Route::post('/notification', function () {
-    $name = request()->name;
-
-    event(new WebSocketEvent($name));
 });
