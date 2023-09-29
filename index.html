@@ -1,45 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="chatApp">
 
 <head>
-    <title>WebSocket Client</title>
+    <title>Socket.IO Chat</title>
 </head>
 
-<body>
-    <h1>WebSocket Client</h1>
-    <div id="messages"></div>
-    <input type="text" id="messageInput" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
+<body ng-controller="ChatController">
+    <ul id="messages">
+        <li ng-repeat="message in messages track by $index">{{ message }}</li>
+    </ul>
 
+    <input id="messageInput" ng-model="newMessage" autocomplete="off" />
+    <button id="sendButton" ng-click="sendMessage()">Send</button>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
     <script>
-        var socket = new WebSocket("ws://localhost:8080"); // Adjust the URL if your server is on a different host or port
+        angular.module('chatApp', [])
+            .controller('ChatController', ['$scope', function($scope) {
+                const socket = io();
+                $scope.messages = [];
+                $scope.newMessage = '';
 
-        socket.addEventListener('open', (event) => {
-            console.log("Connected to WebSocket server");
-            setInterval(() => {
-                let rand = Math.floor(Math.random() * 12) - 6;
-                console.log(rand);
-                if (rand === 1) {
-                    console.log("Bingo");
+                // Function to log random numbers between -10 and 1 every 1.5 seconds
+                function logRandomNumber() {
+                    const randomNumber = Math.floor((Math.random() * 11) - 10);
+                    console.log('Random Number:', randomNumber.toFixed(2));
+                    setTimeout(logRandomNumber, 1500);
                 }
-            }, 1500);
-        });
 
-        socket.addEventListener('message', (event) => {
-            var messages = document.getElementById("messages");
-            messages.innerHTML += "<p>" + event.data + "</p>";
-        });
+                // Log a random number when the client connects
+                socket.on('connect', function() {
+                    console.log('Connected to the server');
+                    logRandomNumber(); // Start logging random numbers
+                });
 
-        socket.addEventListener('close', (event) => {
-            console.log("Connection closed");
-        });
+                $scope.sendMessage = function() {
+                    const message = $scope.newMessage;
+                    socket.emit('chat message', message);
+                    $scope.newMessage = '';
+                    console.log('Sent message:', message);
+                };
 
-        function sendMessage() {
-            var messageInput = document.getElementById("messageInput");
-            var message = messageInput.value;
-            socket.send(message);
-            messageInput.value = "";
-        }
+                socket.on('chat message', function(message) {
+                    $scope.$apply(function() {
+                        $scope.messages.push(message);
+                    });
+                });
+            }]);
     </script>
 </body>
 

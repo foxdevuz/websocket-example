@@ -1,30 +1,41 @@
-const WebSocket = require('ws');
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
 
-// Create a WebSocket server
-const wss = new WebSocket.Server({ port: 8080 });
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
-// Store connected clients
-const clients = new Set();
+const messages = []; // Array to store chat messages
 
-wss.on('connection', (ws) => {
-    // Add the new connection to the set of clients
-    clients.add(ws);
+// Serve the HTML file
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html');
+});
 
-    console.log(`New connection!`);
+// Socket.IO connection handling
+io.on('connection', (socket) => {
+    console.log('A user connected');
 
-    ws.on('message', (message) => {
-        console.log(`Received message: ${message}`);
+    // Listen for incoming messages
+    socket.on('chat message', (message) => {
+        messages.push(message); // Store the message in the array
+        io.emit('chat message', message); // Broadcast the message to all connected clients
     });
 
-    ws.on('close', () => {
-        // Remove the connection when a client disconnects
-        clients.delete(ws);
-        console.log(`A client has disconnected`);
-    });
-
-    ws.on('error', (error) => {
-        console.error(`An error occurred: ${error.message}`);
+    // Handle disconnection
+    socket.on('disconnect', () => {
+        console.log('A user disconnected');
     });
 });
 
-console.log('WebSocket server started on port 8080...');
+// Endpoint to get all stored chat messages
+app.get('/messages', (req, res) => {
+    res.json(messages);
+});
+
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+    console.log(`Server is running on port ${ PORT }`);
+});
